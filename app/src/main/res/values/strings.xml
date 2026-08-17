@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GPS 速度计</string>
+    <string name="toggle_unit">切换单位 (km/h ↔ MPH)</string>
+    <string name="accuracy_unknown">精度未知</string>
+    <string name="permission_denied">需要位置权限才能显示速度</string>
+</resources>

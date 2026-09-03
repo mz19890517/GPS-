@@ -173,7 +173,7 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
             tvLoading.text = ""
             val remain = info.routeRemainLightCount
             tvLightCount.text = getString(R.string.navi_remain_lights, remain)
-            val road = info.curRoadName
+            val road = info.currentRoadName
             tvRoadName.text = getString(R.string.navi_cur_road, road ?: "")
         }
     }

@@ -4,4 +4,12 @@
     <string name="toggle_unit">切换单位 (km/h ↔ MPH)</string>
     <string name="accuracy_unknown">精度未知</string>
     <string name="permission_denied">需要位置权限才能显示速度</string>
+    <string name="btn_navi">🚦 红绿灯导航 (测试)</string>
+    <string name="navi_dest_hint">输入目的地地址或坐标</string>
+    <string name="navi_start">开始导航</string>
+    <string name="navi_no_key">尚未配置高德地图 Key，请先在项目中配置 AMAP_KEY</string>
+    <string name="navi_need_location">导航需要位置权限</string>
+    <string name="navi_route_fail">算路失败，请检查目的地或网络</string>
+    <string name="navi_remain_lights">前方剩余红绿灯：%1$d 个</string>
+    <string name="navi_back">返回</string>
 </resources>

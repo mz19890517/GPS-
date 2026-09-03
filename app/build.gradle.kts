@@ -13,6 +13,11 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+        multiDexEnabled = true
+        ndk {
+            abiFilters += listOf("armeabi-v7a", "arm64-v8a")
+        }
+        manifestPlaceholders["AMAP_KEY"] = project.findProperty("AMAP_KEY") ?: "YOUR_AMAP_KEY"
     }
 
     buildTypes {
@@ -29,6 +34,17 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    packagingOptions {
+        resources.excludes += setOf(
+            "META-INF/DEPENDENCIES",
+            "META-INF/LICENSE",
+            "META-INF/LICENSE.txt",
+            "META-INF/NOTICE",
+            "META-INF/NOTICE.txt",
+            "META-INF/INDEX.LIST"
+        )
+    }
 }
 
 dependencies {
@@ -36,4 +52,8 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.multidex:multidex:2.0.1")
+
+    // 高德导航 SDK（含 3D 地图 + 定位 + 搜索）
+    implementation("com.amap.api:navi-3dmap:7.4.0_3dmap7.4.0")
 }

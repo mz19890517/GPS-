@@ -1,6 +1,7 @@
 package com.gpsspeed.app
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
 import android.location.LocationListener
@@ -32,6 +33,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
         findViewById<android.view.View>(R.id.btn_toggle_unit).setOnClickListener {
             useMph = !useMph
             tvUnit.text = if (useMph) "MPH" else "km/h"
+        }
+
+        findViewById<android.view.View>(R.id.btn_navi).setOnClickListener {
+            startActivity(Intent(this, NaviActivity::class.java))
         }
 
         requestLocation()

@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
     private fun showKeyDialog() {
         val container = LinearLayout(this)
         container.orientation = LinearLayout.VERTICAL
-        container.setPadding(48, 32, 48, 8)
+        container.setPadding(48, 24, 48, 8)
 
         // 显示当前 APK 签名 SHA1（申请高德 Key 需要）
         val tvSha1 = TextView(this)
@@ -82,12 +82,13 @@ class MainActivity : AppCompatActivity(), LocationListener {
 
         val etKey = EditText(this)
         etKey.hint = getString(R.string.key_edit_hint)
+        etKey.setSingleLine(true)
         etKey.setText(KeyStore.getAmapKey(this))
         val lp = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        lp.topMargin = 24
+        lp.topMargin = 20
         etKey.layoutParams = lp
         container.addView(etKey)
 
@@ -98,39 +99,75 @@ class MainActivity : AppCompatActivity(), LocationListener {
             LinearLayout.LayoutParams.MATCH_PARENT,
             LinearLayout.LayoutParams.WRAP_CONTENT
         )
-        dlp.topMargin = 12
+        dlp.topMargin = 14
         tvDetect.layoutParams = dlp
         container.addView(tvDetect)
+
+        // 检测按钮（内容内按钮，避免被键盘/多按钮问题挡住）
+        val btnDetect = TextView(this)
+        btnDetect.text = getString(R.string.key_detect)
+        btnDetect.textSize = 15f
+        btnDetect.gravity = android.view.Gravity.CENTER
+        btnDetect.setTextColor(android.graphics.Color.WHITE)
+        btnDetect.setBackgroundColor(0xFF0288D1.toInt())
+        btnDetect.isClickable = true
+        val dlp2 = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        dlp2.topMargin = 14
+        btnDetect.layoutParams = dlp2
+        btnDetect.setPadding(0, 14, 0, 14)
+        container.addView(btnDetect)
+
+        // 保存按钮（内容内按钮）
+        val btnSave = TextView(this)
+        btnSave.text = getString(R.string.key_save)
+        btnSave.textSize = 15f
+        btnSave.gravity = android.view.Gravity.CENTER
+        btnSave.setTextColor(android.graphics.Color.WHITE)
+        btnSave.setBackgroundColor(0xFF2E7D32.toInt())
+        btnSave.isClickable = true
+        val dlp3 = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        dlp3.topMargin = 10
+        btnSave.layoutParams = dlp3
+        btnSave.setPadding(0, 14, 0, 14)
+        container.addView(btnSave)
+
+        btnDetect.setOnClickListener {
+            val key = etKey.text.toString().trim()
+            if (key.isEmpty()) {
+                tvDetect.text = getString(R.string.key_detect_empty)
+                tvDetect.setTextColor(0xFFC62828.toInt())
+                return@setOnClickListener
+            }
+            tvDetect.text = getString(R.string.key_detect_pending)
+            tvDetect.setTextColor(0xFF0288D1.toInt())
+            detectKey(key) { result ->
+                tvDetect.text = result
+                tvDetect.setTextColor(
+                    if (result.contains(getString(R.string.key_detect_valid)))
+                        0xFF2E7D32.toInt() else 0xFFC62828.toInt()
+                )
+            }
+        }
+
+        btnSave.setOnClickListener {
+            val key = etKey.text.toString().trim()
+            if (key.isEmpty()) {
+                Toast.makeText(this, R.string.key_empty, Toast.LENGTH_SHORT).show()
+            } else {
+                KeyStore.saveAmapKey(this, key)
+                Toast.makeText(this, R.string.key_saved, Toast.LENGTH_SHORT).show()
+            }
+        }
 
         AlertDialog.Builder(this)
             .setTitle(R.string.key_dialog_title)
             .setView(container)
-            .setPositiveButton(R.string.key_save) { _, _ ->
-                val key = etKey.text.toString().trim()
-                if (key.isEmpty()) {
-                    Toast.makeText(this, R.string.key_empty, Toast.LENGTH_SHORT).show()
-                } else {
-                    KeyStore.saveAmapKey(this, key)
-                    Toast.makeText(this, R.string.key_saved, Toast.LENGTH_SHORT).show()
-                }
-            }
-            .setNeutralButton(R.string.key_detect) { _, _ ->
-                val key = etKey.text.toString().trim()
-                if (key.isEmpty()) {
-                    tvDetect.text = getString(R.string.key_detect_empty)
-                    tvDetect.setTextColor(0xFFC62828.toInt())
-                    return@setNeutralButton
-                }
-                tvDetect.text = getString(R.string.key_detect_pending)
-                tvDetect.setTextColor(0xFF0288D1.toInt())
-                detectKey(key) { result ->
-                    tvDetect.text = result
-                    tvDetect.setTextColor(
-                        if (result.contains(getString(R.string.key_detect_valid)))
-                            0xFF2E7D32.toInt() else 0xFFC62828.toInt()
-                    )
-                }
-            }
             .setNegativeButton(R.string.key_cancel, null)
             .show()
     }

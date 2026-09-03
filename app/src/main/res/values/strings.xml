@@ -36,4 +36,23 @@
     <string name="log_cleared">日志已清空</string>
     <string name="log_copied">日志已复制到剪贴板</string>
     <string name="log_empty">暂无日志</string>
+    <string name="btn_dest">📍 我的目的地</string>
+    <string name="web_key_label">目的地搜索 Key（Web服务）：</string>
+    <string name="web_key_hint">请填写高德 Web服务 Key（用于目的地搜索）</string>
+    <string name="web_key_saved">Web搜索 Key 已保存</string>
+    <string name="dest_title_hint">搜索目的地并保存，点列表项一键导航</string>
+    <string name="dest_search_hint">输入目的地，如：郑州东站</string>
+    <string name="dest_search_btn">搜索</string>
+    <string name="dest_searching">搜索中…</string>
+    <string name="dest_no_result">未找到结果，换个关键词试试</string>
+    <string name="dest_result_count">找到 %1$d 个结果，点击保存</string>
+    <string name="dest_search_fail">搜索失败（网络/Key 问题）</string>
+    <string name="dest_saved_title">我的目的地（点击导航，长按删除）</string>
+    <string name="dest_clear">清空全部</string>
+    <string name="dest_cleared">已清空全部目的地</string>
+    <string name="dest_keyword_empty">请先输入目的地</string>
+    <string name="dest_need_webkey">请在“设置高德 Key”中填写 Web服务 Key 才能搜索</string>
+    <string name="dest_added">已保存：%1$s</string>
+    <string name="dest_deleted">已删除：%1$s</string>
+    <string name="dest_no_amap">未检测到高德地图，请安装后可一键导航</string>
 </resources>

@@ -12,6 +12,7 @@ object KeyStore {
 
     private const val PREFS = "amap_key_prefs"
     private const val KEY_AMAP = "amap_key"
+    private const val KEY_WEB = "web_key"
 
     fun getAmapKey(context: Context): String {
         return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -26,6 +27,20 @@ object KeyStore {
     }
 
     fun hasAmapKey(context: Context): Boolean = getAmapKey(context).isNotEmpty()
+
+    fun getWebKey(context: Context): String {
+        return context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .getString(KEY_WEB, "") ?: ""
+    }
+
+    fun saveWebKey(context: Context, key: String) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putString(KEY_WEB, key.trim())
+            .apply()
+    }
+
+    fun hasWebKey(context: Context): Boolean = getWebKey(context).isNotEmpty()
 
     /** 获取当前 APK 签名证书的 SHA1（申请高德 Key 时需填写） */
     fun getSignatureSha1(context: Context): String {

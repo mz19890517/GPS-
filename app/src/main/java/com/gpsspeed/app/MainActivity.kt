@@ -59,6 +59,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
             startActivity(Intent(this, LogActivity::class.java))
         }
 
+        findViewById<android.view.View>(R.id.btn_dest).setOnClickListener {
+            startActivity(Intent(this, DestinationActivity::class.java))
+        }
+
         requestLocation()
     }
 
@@ -171,6 +175,57 @@ class MainActivity : AppCompatActivity(), LocationListener {
             } else {
                 KeyStore.saveAmapKey(this, key)
                 Toast.makeText(this, R.string.key_saved, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // ---- 目的地搜索 Key（Web服务），与导航 Key 分开 ----
+        val tvWebLabel = TextView(this)
+        tvWebLabel.textSize = 13f
+        tvWebLabel.setTextColor(0xFF8E8EAA.toInt())
+        tvWebLabel.text = getString(R.string.web_key_label)
+        val wlp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        wlp.topMargin = 24
+        tvWebLabel.layoutParams = wlp
+        container.addView(tvWebLabel)
+
+        val etWebKey = EditText(this)
+        etWebKey.hint = getString(R.string.web_key_hint)
+        etWebKey.setSingleLine(true)
+        etWebKey.setText(KeyStore.getWebKey(this))
+        val wlp2 = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        wlp2.topMargin = 8
+        etWebKey.layoutParams = wlp2
+        container.addView(etWebKey)
+
+        val btnSaveWeb = TextView(this)
+        btnSaveWeb.text = getString(R.string.key_save)
+        btnSaveWeb.textSize = 15f
+        btnSaveWeb.gravity = android.view.Gravity.CENTER
+        btnSaveWeb.setTextColor(android.graphics.Color.WHITE)
+        btnSaveWeb.setBackgroundColor(0xFF0288D1.toInt())
+        btnSaveWeb.isClickable = true
+        val wlp3 = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        wlp3.topMargin = 10
+        btnSaveWeb.layoutParams = wlp3
+        btnSaveWeb.setPadding(0, 12, 0, 12)
+        container.addView(btnSaveWeb)
+
+        btnSaveWeb.setOnClickListener {
+            val wk = etWebKey.text.toString().trim()
+            if (wk.isEmpty()) {
+                Toast.makeText(this, R.string.key_empty, Toast.LENGTH_SHORT).show()
+            } else {
+                KeyStore.saveWebKey(this, wk)
+                Toast.makeText(this, R.string.web_key_saved, Toast.LENGTH_SHORT).show()
             }
         }
 

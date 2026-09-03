@@ -19,6 +19,14 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE"
         android:maxSdkVersion="32" />
 
+    <!-- 让应用能发现调起高德地图的 Intent -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="androidamap" />
+        </intent>
+    </queries>
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -52,6 +60,12 @@
         <!-- 日志查看 Activity -->
         <activity
             android:name=".LogActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+
+        <!-- 我的目的地 Activity -->
+        <activity
+            android:name=".DestinationActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
 

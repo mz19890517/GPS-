@@ -7,8 +7,12 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.view.Gravity
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -36,10 +40,68 @@ class MainActivity : AppCompatActivity(), LocationListener {
         }
 
         findViewById<android.view.View>(R.id.btn_navi).setOnClickListener {
+            val hasKey = KeyStore.hasAmapKey(this)
+            if (!hasKey) {
+                Toast.makeText(this, R.string.key_hint_first, Toast.LENGTH_SHORT).show()
+            }
             startActivity(Intent(this, NaviActivity::class.java))
         }
 
+        findViewById<android.view.View>(R.id.btn_key_settings).setOnClickListener {
+            showKeyDialog()
+        }
+
         requestLocation()
+    }
+
+    private fun showKeyDialog() {
+        val container = LinearLayout(this)
+        container.orientation = LinearLayout.VERTICAL
+        container.setPadding(48, 32, 48, 8)
+
+        // 显示当前 APK 签名 SHA1（申请高德 Key 需要）
+        val tvSha1 = TextView(this)
+        tvSha1.textSize = 13f
+        tvSha1.setTextColor(0xFF555555.toInt())
+        tvSha1.text = getString(R.string.key_sha1_hint) + "\n" + KeyStore.getSignatureSha1(this)
+        container.addView(tvSha1)
+
+        // 当前 Key 状态
+        val tvStatus = TextView(this)
+        tvStatus.textSize = 13f
+        tvStatus.text = if (KeyStore.hasAmapKey(this)) {
+            getString(R.string.key_configured) + KeyStore.getAmapKey(this)
+        } else {
+            getString(R.string.key_not_configured)
+        }
+        tvStatus.setTextColor(if (KeyStore.hasAmapKey(this)) 0xFF2E7D32.toInt() else 0xFFC62828.toInt())
+        container.addView(tvStatus)
+
+        val etKey = EditText(this)
+        etKey.hint = getString(R.string.key_edit_hint)
+        etKey.setText(KeyStore.getAmapKey(this))
+        val lp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        lp.topMargin = 24
+        etKey.layoutParams = lp
+        container.addView(etKey)
+
+        AlertDialog.Builder(this)
+            .setTitle(R.string.key_dialog_title)
+            .setView(container)
+            .setPositiveButton(R.string.key_save) { _, _ ->
+                val key = etKey.text.toString().trim()
+                if (key.isEmpty()) {
+                    Toast.makeText(this, R.string.key_empty, Toast.LENGTH_SHORT).show()
+                } else {
+                    KeyStore.saveAmapKey(this, key)
+                    Toast.makeText(this, R.string.key_saved, Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton(R.string.key_cancel, null)
+            .show()
     }
 
     private fun requestLocation() {

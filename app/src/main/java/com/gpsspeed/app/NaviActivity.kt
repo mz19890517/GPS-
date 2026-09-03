@@ -59,6 +59,12 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
         naviView.setAMapNaviViewListener(this)
         naviView.onCreate(savedInstanceState)
 
+        // 运行时设置用户在软件内填写的高德 Key
+        val amapKey = KeyStore.getAmapKey(this)
+        if (amapKey.isNotEmpty()) {
+            AMapNavi.setApiKey(applicationContext, amapKey)
+        }
+
         navi = AMapNavi.getInstance(this)
         navi?.addAMapNaviListener(this)
 

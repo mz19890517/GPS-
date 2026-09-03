@@ -9,9 +9,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <!-- 顶部目的地输入栏 -->
+    <!-- 顶部红绿灯信息栏 -->
     <LinearLayout
-        android:id="@+id/dest_panel"
+        android:id="@+id/info_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
@@ -21,51 +21,30 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <EditText
-                android:id="@+id/et_dest"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/navi_dest_hint"
-                android:imeOptions="actionDone"
-                android:inputType="text"
-                android:maxLines="1"
-                android:textSize="15sp" />
-
-            <Button
-                android:id="@+id/btn_start_navi"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:text="@string/navi_start" />
-        </LinearLayout>
-
-        <!-- 红绿灯倒计时展示面板 -->
-        <LinearLayout
-            android:id="@+id/light_panel"
+        <TextView
+            android:id="@+id/tv_road_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:background="#22000000"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:padding="8dp"
-            android:visibility="gone">
+            android:textColor="#1A1A2E"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tv_light_count"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textColor="#1A1A2E"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/tv_light_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#E94560"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
-        </LinearLayout>
+        <TextView
+            android:id="@+id/tv_loading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="#888888"
+            android:textSize="13sp" />
     </LinearLayout>
 
     <TextView
@@ -74,7 +53,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_margin="8dp"
-        android:layout_toEndOf="@id/dest_panel"
+        android:layout_toEndOf="@id/info_bar"
         android:background="?attr/selectableItemBackground"
         android:padding="10dp"
         android:text="@string/navi_back"

@@ -4,7 +4,7 @@
     <string name="toggle_unit">切换单位 (km/h ↔ MPH)</string>
     <string name="accuracy_unknown">精度未知</string>
     <string name="permission_denied">需要位置权限才能显示速度</string>
-    <string name="btn_navi">🚦 红绿灯导航</string>
+    <string name="btn_navi">🚦 附近红绿灯</string>
     <string name="btn_key_settings">⚙ 设置高德 Key</string>
     <string name="key_dialog_title">高德 Key 设置</string>
     <string name="key_sha1_hint">将此 SHA1 填入高德开放平台申请 Key：</string>
@@ -16,11 +16,18 @@
     <string name="key_empty">Key 不能为空</string>
     <string name="key_saved">高德 Key 已保存</string>
     <string name="key_hint_first">请先点击“设置高德 Key”填入 Key</string>
-    <string name="navi_dest_hint">输入目的地地址或坐标</string>
-    <string name="navi_start">开始导航</string>
-    <string name="navi_no_key">尚未配置高德地图 Key，请先在项目中配置 AMAP_KEY</string>
-    <string name="navi_need_location">导航需要位置权限</string>
-    <string name="navi_route_fail">算路失败，请检查目的地或网络</string>
-    <string name="navi_remain_lights">前方剩余红绿灯：%1$d 个</string>
+    <string name="key_detect">检测 Key 是否有效</string>
+    <string name="key_detect_pending">检测中…</string>
+    <string name="key_detect_valid">✓ Key 有效</string>
+    <string name="key_detect_invalid">✗ Key 无效，请检查</string>
+    <string name="key_detect_network">网络错误，无法检测</string>
+    <string name="key_detect_empty">请先填写 Key</string>
+    <string name="navi_loading">正在初始化…</string>
+    <string name="navi_routing">正在自动规划路线…</string>
+    <string name="navi_no_location">未获取到定位，使用默认位置</string>
+    <string name="navi_no_key">尚未配置高德 Key，请先点击“设置高德 Key”</string>
+    <string name="navi_route_fail">自动规划失败或网络异常</string>
+    <string name="navi_remain_lights">前方红绿灯：%1$d 个</string>
+    <string name="navi_cur_road">当前道路：%1$s</string>
     <string name="navi_back">返回</string>
 </resources>

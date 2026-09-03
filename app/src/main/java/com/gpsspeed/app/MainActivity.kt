@@ -7,7 +7,8 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.view.Gravity
+import android.os.Handler
+import android.os.Looper
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -16,6 +17,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.net.HttpURLConnection
+import java.net.URL
 
 class MainActivity : AppCompatActivity(), LocationListener {
 
@@ -88,6 +91,17 @@ class MainActivity : AppCompatActivity(), LocationListener {
         etKey.layoutParams = lp
         container.addView(etKey)
 
+        // 检测结果展示
+        val tvDetect = TextView(this)
+        tvDetect.textSize = 14f
+        val dlp = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+        dlp.topMargin = 12
+        tvDetect.layoutParams = dlp
+        container.addView(tvDetect)
+
         AlertDialog.Builder(this)
             .setTitle(R.string.key_dialog_title)
             .setView(container)
@@ -100,8 +114,58 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     Toast.makeText(this, R.string.key_saved, Toast.LENGTH_SHORT).show()
                 }
             }
+            .setNeutralButton(R.string.key_detect) { _, _ ->
+                val key = etKey.text.toString().trim()
+                if (key.isEmpty()) {
+                    tvDetect.text = getString(R.string.key_detect_empty)
+                    tvDetect.setTextColor(0xFFC62828.toInt())
+                    return@setNeutralButton
+                }
+                tvDetect.text = getString(R.string.key_detect_pending)
+                tvDetect.setTextColor(0xFF0288D1.toInt())
+                detectKey(key) { result ->
+                    tvDetect.text = result
+                    tvDetect.setTextColor(
+                        if (result.contains(getString(R.string.key_detect_valid)))
+                            0xFF2E7D32.toInt() else 0xFFC62828.toInt()
+                    )
+                }
+            }
             .setNegativeButton(R.string.key_cancel, null)
             .show()
+    }
+
+    /** 通过高德逆地理编码接口校验 Key 是否有效 */
+    private fun detectKey(key: String, callback: (String) -> Unit) {
+        Thread {
+            try {
+                val url = URL(
+                    "https://restapi.amap.com/v3/geocode/regeo?location=116.397428,39.90923&key=$key"
+                )
+                val conn = url.openConnection() as HttpURLConnection
+                conn.connectTimeout = 8000
+                conn.readTimeout = 8000
+                conn.requestMethod = "GET"
+                val resp = conn.inputStream.bufferedReader().readText()
+                conn.disconnect()
+
+                val valid = resp.contains("\"status\":\"1\"") && resp.contains("\"infocode\":\"10000\"")
+                val invalidKey = resp.contains("\"infocode\":\"10001\"")
+                Handler(Looper.getMainLooper()).post {
+                    callback(
+                        when {
+                            valid -> getString(R.string.key_detect_valid)
+                            invalidKey -> getString(R.string.key_detect_invalid)
+                            else -> getString(R.string.key_detect_invalid)
+                        }
+                    )
+                }
+            } catch (e: Exception) {
+                Handler(Looper.getMainLooper()).post {
+                    callback(getString(R.string.key_detect_network))
+                }
+            }
+        }.start()
     }
 
     private fun requestLocation() {

@@ -2,12 +2,10 @@ package com.gpsspeed.app
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
-import android.text.TextUtils
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -31,30 +29,32 @@ import com.amap.api.navi.model.AMapServiceAreaInfo
 import com.amap.api.navi.model.AimLessModeCongestionInfo
 import com.amap.api.navi.model.AimLessModeStat
 import com.amap.api.navi.model.NaviInfo
+import com.amap.api.navi.model.NaviLatLng
 import com.autonavi.tbt.TrafficFacilityInfo
+import kotlin.math.cos
+import kotlin.math.sin
 
 class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener {
 
     private lateinit var naviView: AMapNaviView
-    private lateinit var etDest: EditText
-    private lateinit var btnStart: Button
-    private lateinit var lightPanel: LinearLayout
+    private lateinit var tvRoadName: TextView
     private lateinit var tvLightCount: TextView
+    private lateinit var tvLoading: TextView
 
     private var navi: AMapNavi? = null
-    private var isNaviStarted = false
-    private var lastLat = 0.0
-    private var lastLng = 0.0
+    private var autoRouteRequested = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_navi)
 
         naviView = findViewById(R.id.navi_view)
-        etDest = findViewById(R.id.et_dest)
-        btnStart = findViewById(R.id.btn_start_navi)
-        lightPanel = findViewById(R.id.light_panel)
+        tvRoadName = findViewById(R.id.tv_road_name)
         tvLightCount = findViewById(R.id.tv_light_count)
+        tvLoading = findViewById(R.id.tv_loading)
+
+        tvLightCount.text = ""
+        tvLoading.text = getString(R.string.navi_loading)
 
         naviView.setAMapNaviViewListener(this)
         naviView.onCreate(savedInstanceState)
@@ -63,12 +63,14 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
         val amapKey = KeyStore.getAmapKey(this)
         if (amapKey.isNotEmpty()) {
             AMapNavi.setApiKey(applicationContext, amapKey)
+            tvLoading.text = ""
+        } else {
+            tvLoading.text = getString(R.string.key_not_configured)
         }
 
         navi = AMapNavi.getInstance(this)
         navi?.addAMapNaviListener(this)
 
-        btnStart.setOnClickListener { startNavigate() }
         findViewById<View>(R.id.btn_back).setOnClickListener { finish() }
 
         checkLocationPermission()
@@ -86,69 +88,97 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
                 ),
                 REQ_LOCATION
             )
+            return
         }
+        startAutoNavigation()
     }
 
-    private fun startNavigate() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED
-        ) {
-            Toast.makeText(this, R.string.navi_need_location, Toast.LENGTH_SHORT).show()
+    /** 自动定位当前坐标，算一条到前方 20 公里处的路线以进入导航模式 */
+    private fun startAutoNavigation() {
+        if (!KeyStore.hasAmapKey(this)) {
+            tvLoading.text = getString(R.string.key_not_configured)
             return
         }
-        val dest = etDest.text.toString().trim()
-        if (TextUtils.isEmpty(dest)) {
-            toast(R.string.navi_dest_hint)
+        val lm = getSystemService(LOCATION_SERVICE) as LocationManager
+        val loc = try {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                lm.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    ?: lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            } else null
+        } catch (e: SecurityException) {
+            null
+        }
+
+        if (loc == null) {
+            tvLoading.text = getString(R.string.navi_no_location)
+            // 没拿到定位，用一个默认坐标（北京天安门）尝试
+            routeToAhead(39.90923, 116.397428, 0f)
             return
         }
-        val n = navi ?: run {
-            toast(R.string.navi_no_key)
-            return
-        }
-        // 关闭输入面板，进入导航全屏
-        findViewById<View>(R.id.dest_panel).visibility = View.GONE
-        // 地址关键字算路（起点为空表示从当前位置出发）
-        n.calculateDriveRoute("", dest, emptyList(), PathPlanningStrategy.DRIVING_AVOID_CONGESTION)
+        routeToAhead(loc.latitude, loc.longitude, loc.bearing)
+    }
+
+    private fun routeToAhead(lat: Double, lng: Double, bearing: Float) {
+        val b = if (bearing in 1f..359f) bearing else 90f
+        val endPoint = offsetPoint(lat, lng, 20000.0, b)
+
+        val startList = listOf(NaviLatLng(lat, lng))
+        val endList = listOf(NaviLatLng(endPoint.first, endPoint.second))
+
+        tvLoading.text = getString(R.string.navi_routing)
+        autoRouteRequested = true
+        navi?.calculateDriveRoute(
+            startList, endList, emptyList(), PathPlanningStrategy.DRIVING_AVOID_CONGESTION
+        )
+    }
+
+    /** 沿给定方向偏移 distanceMeters 米，返回 (lat, lng) */
+    private fun offsetPoint(lat: Double, lng: Double, distanceMeters: Double, bearingDeg: Float): Pair<Double, Double> {
+        val bearingRad = Math.toRadians(bearingDeg.toDouble())
+        val latRad = Math.toRadians(lat)
+        val metersPerDegLat = 111320.0
+        val dLat = (distanceMeters / metersPerDegLat) * cos(bearingRad)
+        val dLng = (distanceMeters / metersPerDegLat) * sin(bearingRad) / cos(latRad)
+        return Pair(lat + dLat, lng + dLng)
     }
 
     override fun onInitNaviFailure() {
-        toast(R.string.navi_no_key)
+        tvLoading.text = getString(R.string.navi_no_key)
     }
 
     override fun onInitNaviSuccess() {}
 
     override fun onCalculateRouteSuccess(intArray: IntArray) {
         navi?.startNavi(AMapNavi.GPSNaviMode)
-        isNaviStarted = true
-        btnStart.visibility = View.GONE
+        tvLoading.text = ""
     }
 
     override fun onCalculateRouteSuccess(result: AMapCalcRouteResult?) {
         navi?.startNavi(AMapNavi.GPSNaviMode)
-        isNaviStarted = true
-        btnStart.visibility = View.GONE
+        tvLoading.text = ""
     }
 
     override fun onCalculateRouteFailure(errorCode: Int) {
-        toast(R.string.navi_route_fail)
+        tvLoading.text = getString(R.string.navi_route_fail)
     }
 
     override fun onCalculateRouteFailure(result: AMapCalcRouteResult?) {
-        toast(R.string.navi_route_fail)
+        tvLoading.text = getString(R.string.navi_route_fail)
     }
 
     override fun onNaviInfoUpdate(info: NaviInfo?) {
-        // 红绿灯剩余数量
-        if (info != null && lightPanel != null) {
+        if (info != null) {
+            tvLoading.text = ""
             val remain = info.routeRemainLightCount
-            lightPanel.visibility = View.VISIBLE
             tvLightCount.text = getString(R.string.navi_remain_lights, remain)
+            val road = info.curRoadName
+            tvRoadName.text = getString(R.string.navi_cur_road, road ?: "")
         }
     }
 
-    override fun onArriveDestination() {
-        Toast.makeText(this, "到达目的地", Toast.LENGTH_SHORT).show()
-    }
+    override fun onArriveDestination() {}
 
     override fun onGpsOpenStatus(enabled: Boolean) {}
 
@@ -156,12 +186,7 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
 
     override fun onTrafficStatusUpdate() {}
 
-    override fun onLocationChange(location: AMapNaviLocation?) {
-        location?.let {
-            lastLat = it.coord.latitude
-            lastLng = it.coord.longitude
-        }
-    }
+    override fun onLocationChange(location: AMapNaviLocation?) {}
 
     override fun onGetNavigationText(text: String) {}
 
@@ -267,12 +292,8 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
         if (requestCode == REQ_LOCATION && grantResults.isNotEmpty()
             && grantResults[0] == PackageManager.PERMISSION_GRANTED
         ) {
-            Toast.makeText(this, "位置权限已开启，点击开始导航", Toast.LENGTH_SHORT).show()
+            startAutoNavigation()
         }
-    }
-
-    private fun toast(resId: Int) {
-        Toast.makeText(this, resId, Toast.LENGTH_SHORT).show()
     }
 
     companion object {

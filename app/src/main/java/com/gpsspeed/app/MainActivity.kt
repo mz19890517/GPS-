@@ -47,11 +47,16 @@ class MainActivity : AppCompatActivity(), LocationListener {
             if (!hasKey) {
                 Toast.makeText(this, R.string.key_hint_first, Toast.LENGTH_SHORT).show()
             }
+            LogStore.log("Main", "进入红绿灯页面, hasKey=$hasKey")
             startActivity(Intent(this, NaviActivity::class.java))
         }
 
         findViewById<android.view.View>(R.id.btn_key_settings).setOnClickListener {
             showKeyDialog()
+        }
+
+        findViewById<android.view.View>(R.id.btn_log).setOnClickListener {
+            startActivity(Intent(this, LogActivity::class.java))
         }
 
         requestLocation()
@@ -138,15 +143,19 @@ class MainActivity : AppCompatActivity(), LocationListener {
         container.addView(btnSave)
 
         btnDetect.setOnClickListener {
+            LogStore.log("Key", "点击了检测Key按钮")
             val key = etKey.text.toString().trim()
             if (key.isEmpty()) {
+                LogStore.log("Key", "检测失败: Key为空")
                 tvDetect.text = getString(R.string.key_detect_empty)
                 tvDetect.setTextColor(0xFFC62828.toInt())
                 return@setOnClickListener
             }
+            LogStore.log("Key", "开始检测Key, 长度=${key.length}, 前6位=${key.take(6)}")
             tvDetect.text = getString(R.string.key_detect_pending)
             tvDetect.setTextColor(0xFF0288D1.toInt())
             detectKey(key) { result ->
+                LogStore.log("Key", "检测结果: $result")
                 tvDetect.text = result
                 tvDetect.setTextColor(
                     if (result.contains(getString(R.string.key_detect_valid)))
@@ -183,9 +192,10 @@ class MainActivity : AppCompatActivity(), LocationListener {
                 conn.connectTimeout = 8000
                 conn.readTimeout = 8000
                 conn.requestMethod = "GET"
+                val code = conn.responseCode
                 val resp = conn.inputStream.bufferedReader().readText()
                 conn.disconnect()
-
+                LogStore.log("Key", "HTTP $code, 响应: ${resp.take(200)}")
                 val valid = resp.contains("\"status\":\"1\"") && resp.contains("\"infocode\":\"10000\"")
                 val invalidKey = resp.contains("\"infocode\":\"10001\"")
                 Handler(Looper.getMainLooper()).post {
@@ -198,6 +208,7 @@ class MainActivity : AppCompatActivity(), LocationListener {
                     )
                 }
             } catch (e: Exception) {
+                LogStore.log("Key", "检测异常: ${e.javaClass.simpleName}: ${e.message}")
                 Handler(Looper.getMainLooper()).post {
                     callback(getString(R.string.key_detect_network))
                 }

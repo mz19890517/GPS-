@@ -30,4 +30,10 @@
     <string name="navi_remain_lights">前方红绿灯：%1$d 个</string>
     <string name="navi_cur_road">当前道路：%1$s</string>
     <string name="navi_back">返回</string>
+    <string name="btn_log">📋 查看日志</string>
+    <string name="log_clear">清空</string>
+    <string name="log_copy">复制日志</string>
+    <string name="log_cleared">日志已清空</string>
+    <string name="log_copied">日志已复制到剪贴板</string>
+    <string name="log_empty">暂无日志</string>
 </resources>

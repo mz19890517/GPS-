@@ -62,9 +62,11 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
         // 运行时设置用户在软件内填写的高德 Key
         val amapKey = KeyStore.getAmapKey(this)
         if (amapKey.isNotEmpty()) {
+            LogStore.log("Navi", "设置运行时Key, 长度=${amapKey.length}, 前6位=${amapKey.take(6)}, SHA1=${KeyStore.getSignatureSha1(this)}")
             AMapNavi.setApiKey(applicationContext, amapKey)
             tvLoading.text = ""
         } else {
+            LogStore.log("Navi", "未配置Key")
             tvLoading.text = getString(R.string.key_not_configured)
         }
 
@@ -129,6 +131,7 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
 
         tvLoading.text = getString(R.string.navi_routing)
         autoRouteRequested = true
+        LogStore.log("Navi", "发起自动算路: start=($lat,$lng,b=$b), end=(${endPoint.first},${endPoint.second})")
         navi?.calculateDriveRoute(
             startList, endList, emptyList(), PathPlanningStrategy.DRIVING_AVOID_CONGESTION
         )
@@ -145,26 +148,33 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
     }
 
     override fun onInitNaviFailure() {
+        LogStore.log("Navi", "导航初始化失败(onInitNaviFailure)")
         tvLoading.text = getString(R.string.navi_no_key)
     }
 
-    override fun onInitNaviSuccess() {}
+    override fun onInitNaviSuccess() {
+        LogStore.log("Navi", "导航初始化成功(onInitNaviSuccess)")
+    }
 
     override fun onCalculateRouteSuccess(intArray: IntArray) {
+        LogStore.log("Navi", "算路成功(intArray), routeCount=${intArray.size}")
         navi?.startNavi(AMapNavi.GPSNaviMode)
         tvLoading.text = ""
     }
 
     override fun onCalculateRouteSuccess(result: AMapCalcRouteResult?) {
+        LogStore.log("Navi", "算路成功(result回调)")
         navi?.startNavi(AMapNavi.GPSNaviMode)
         tvLoading.text = ""
     }
 
     override fun onCalculateRouteFailure(errorCode: Int) {
+        LogStore.log("Navi", "算路失败(errorCode=$errorCode)")
         tvLoading.text = getString(R.string.navi_route_fail)
     }
 
     override fun onCalculateRouteFailure(result: AMapCalcRouteResult?) {
+        LogStore.log("Navi", "算路失败(result回调)")
         tvLoading.text = getString(R.string.navi_route_fail)
     }
 
@@ -172,8 +182,9 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
         if (info != null) {
             tvLoading.text = ""
             val remain = info.routeRemainLightCount
-            tvLightCount.text = getString(R.string.navi_remain_lights, remain)
             val road = info.currentRoadName
+            LogStore.log("Navi", "红绿灯信息更新: remainLights=$remain, road=${road ?: ""}")
+            tvLightCount.text = getString(R.string.navi_remain_lights, remain)
             tvRoadName.text = getString(R.string.navi_cur_road, road ?: "")
         }
     }

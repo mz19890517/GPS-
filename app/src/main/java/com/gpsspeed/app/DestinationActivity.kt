@@ -87,7 +87,7 @@ class DestinationActivity : AppCompatActivity() {
         ) {
             override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
                 val v = super.getView(position, convertView, parent) as TextView
-                val d = getItem(position)
+                val d = getItem(position) ?: return v
                 v.text = d.name + "\n" + String.format("%.6f, %.6f", d.lat, d.lng)
                 v.setTextColor(0xFFDDDDDD.toInt())
                 v.textSize = 15f
@@ -168,7 +168,7 @@ class DestinationActivity : AppCompatActivity() {
                         ) {
                             override fun getView(position: Int, convertView: View?, parent: android.view.ViewGroup): View {
                                 val v = super.getView(position, convertView, parent) as TextView
-                                val d = getItem(position)
+                                val d = getItem(position) ?: return v
                                 v.text = d.name + "  (点击保存)"
                                 v.setTextColor(0xFF4FC3F7.toInt())
                                 v.textSize = 15f

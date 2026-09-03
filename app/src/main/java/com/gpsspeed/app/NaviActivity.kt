@@ -105,6 +105,10 @@ class NaviActivity : AppCompatActivity(), AMapNaviListener, AMapNaviViewListener
         n.calculateDriveRoute("", dest, emptyList(), PathPlanningStrategy.DRIVING_AVOID_CONGESTION)
     }
 
+    override fun onInitNaviFailure() {
+        toast(R.string.navi_no_key)
+    }
+
     override fun onInitNaviSuccess() {}
 
     override fun onCalculateRouteSuccess(intArray: IntArray) {
